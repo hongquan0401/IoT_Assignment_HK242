@@ -1,0 +1,50 @@
+#include <Arduino.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include <Adafruit_NeoPixel.h>
+#include "dht-op.h"
+#include "mqtt-conn.h"
+
+// Onboard RGB LED
+#define LED_PIN 48
+#define NUMPIXEL 1
+
+uint8_t ledState = 0; // Stores LED state
+Adafruit_NeoPixel pixels(NUMPIXEL, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+void blinkLED(void *pvParameters) {
+  pixels.clear();
+  while(true){
+    if(ledState){
+      ledState = 0;
+      pixels.setPixelColor(0, pixels.Color(150, 150, 150));
+      pixels.show();
+    }else{
+      ledState++;
+      pixels.setPixelColor(0, pixels.Color(0, 0, 0));
+      pixels.show();
+    }
+    vTaskDelay(1500);
+  }
+  //vTaskDelete(NULL);  // Delete the task when done
+}
+
+void setup() {
+  Serial.begin(115200);
+  pixels.begin();
+  
+  InitWiFi();
+  initThingsBoard();
+
+  xTaskCreate(setupDHT, "DHT initial setup", 4096, NULL, 1, NULL);
+  xTaskCreate(blinkLED, "blink LED", 3 * 1024, NULL, 1, NULL);
+  xTaskCreate(updateDHT, "Update DHT readings", 6 * 1024, NULL, 2, NULL);
+}
+
+void loop() {
+  WiFireconnect();
+  dispHumid();
+  dispTemp();
+  sendTBData();
+  delay(4000);
+}
