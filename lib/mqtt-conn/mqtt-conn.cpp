@@ -81,25 +81,5 @@ void initThingsBoard(){
 void sendTBData(){
     tb.sendTelemetryData<float>("temperature", getTemp());
     tb.sendTelemetryData<float>("humidity", getHumid());
-    /*
-    doc["temperature"] = getTemp();
-    // Serialize the JSON document
-
-    len = serializeJson(doc, buffer, sizeof(buffer));
-    // Send telemetry data
-    if (!tb.sendTelemetryJson(doc, len)) {
-      Serial.println("Failed to send telemetry");
-    }
-
-    doc["humidity"] = getHumid();
-    // Serialize the JSON document
-    len = serializeJson(doc, buffer, sizeof(buffer));
-    // Send telemetry data
-    if (!tb.sendTelemetryJson(doc, len)) {
-      Serial.println("Failed to send telemetry");
-    }
-
-    tb.loop();
-    */
 }
 
