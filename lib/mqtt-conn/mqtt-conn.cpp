@@ -54,12 +54,13 @@ void InitWiFi() {
     Serial.println(WiFi.localIP());
 }
 
-bool WiFireconnect(){
-    if (WiFi.status() == WL_CONNECTED) {
-        return true;
+void WiFireconnect(void *pvParameters){
+    while (1){
+        if (!WiFi.status() == WL_CONNECTED) {
+            xTaskCreate(wifiTask, "Reconnect wifi", 6 * 1024, nullptr, 2, nullptr);
+        }
+        vTaskDelay(510);
     }
-    InitWiFi();
-    return true;
 }
 
 void initTBtask(void *pvParameters){
@@ -80,35 +81,26 @@ void initTBtask(void *pvParameters){
     }
 }
 
-void initThingsBoard(){
-    if (!tb.connected()) {
-        Serial.printf("Connecting to: (%s) with token (%s)\n", THINGSBOARD_SERVER, TOKEN);
-        if (!tb.connect(THINGSBOARD_SERVER, TOKEN, THINGSBOARD_PORT)) {
-            Serial.println("Failed to connect");
-            return;
-        }else{
-            Serial.println("CoreIoT server connected!");
+void sendTBData(void *pvParameters){
+    while (1){
+        if(!(isnan(getTemp())) && !(isnan(getHumid()))){
+            // Send temperature to the CoreIoT server
+            if(tb.sendTelemetryData<int>("temperature", getTemp())){
+                Serial.println("Temperature sent to CoreIoT successfullly!");
+                dispTemp();
+            }else{
+                Serial.println("Temperature FAILED to send.");
+            }
+            // Send temperature to the CoreIoT server
+            if(tb.sendTelemetryData<int>("humidity", getHumid())){
+                Serial.println("Humidity sent to CoreIoT successfullly!");
+                dispHumid();
+            }else{
+                Serial.println("Humidity FAILED to send.");
+            }
         }
+        Serial.println("-----------------------------------------");
+        vTaskDelay(5220);
     }
-}
-
-void sendTBData(){
-    if(!(isnan(getTemp())) && !(isnan(getHumid()))){
-        // Send temperature to the CoreIoT server
-        if(tb.sendTelemetryData<int>("temperature", getTemp())){
-            Serial.println("Temperature sent to CoreIoT successfullly!");
-            dispTemp();
-        }else{
-            Serial.println("Temperature FAILED to send.");
-        }
-        // Send temperature to the CoreIoT server
-        if(tb.sendTelemetryData<int>("humidity", getHumid())){
-            Serial.println("Humidity sent to CoreIoT successfullly!");
-            dispHumid();
-        }else{
-            Serial.println("Humidity FAILED to send.");
-        }
-    }
-    Serial.println("-----------------------------------------");
 }
 

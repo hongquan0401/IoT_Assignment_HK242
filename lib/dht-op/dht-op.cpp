@@ -18,7 +18,7 @@ void updateDHT(void *pvParameters){
         if (isnan(humid) || isnan(temp)) {
             Serial.println(F("Reading from DHT sensor FAILED!"));
         }
-        vTaskDelay(5000);
+        vTaskDelay(5110);
     }
 }
   

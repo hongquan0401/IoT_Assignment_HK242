@@ -19,10 +19,8 @@
 void wifiTask(void *pvParameters);
 void initTBtask(void *pvParameters);
 
-void InitWiFi();
-bool WiFireconnect();
+void WiFireconnect(void *pvParameters);
 
-void initThingsBoard();
-void sendTBData();
+void sendTBData(void *pvParameters);
 
 #endif /*MQTT_CONN_H*/

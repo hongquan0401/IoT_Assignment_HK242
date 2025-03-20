@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/FreeRTOSConfig.h"
 #include <Adafruit_NeoPixel.h>
 #include "dht-op.h"
 #include "mqtt-conn.h"
@@ -32,16 +33,16 @@ void setup() {
   Serial.begin(115200);
   pixels.begin();
   
-  xTaskCreate(wifiTask, "init wifi", 6 * 1024, nullptr, 2, nullptr);
+  xTaskCreate(wifiTask, "init wifi", 6 * 1024, nullptr, 3, nullptr);
   xTaskCreate(initTBtask, "init CoreIoT", 6 * 1024, nullptr, 2, nullptr);
-
   xTaskCreate(setupDHT, "DHT initial setup", 4096, NULL, 1, NULL);
+
   xTaskCreate(blinkLED, "blink LED", 3 * 1024, NULL, 1, NULL);
-  xTaskCreate(updateDHT, "Update DHT readings", 6 * 1024, NULL, 2, NULL);
+  xTaskCreate(updateDHT, "Update DHT readings", 6 * 1024, NULL, 3, NULL);
+  xTaskCreate(sendTBData, "Send data to CoreIoT", 8 * 1024, NULL, 2, NULL);
+  vTaskStartScheduler;
 }
 
 void loop() {
-  WiFireconnect();
-  sendTBData();
-  delay(4000);
+  //exists
 }
