@@ -17,6 +17,8 @@
 #define ENCRYPTED false
 
 void wifiTask(void *pvParameters);
+void initTBtask(void *pvParameters);
+
 void InitWiFi();
 bool WiFireconnect();
 

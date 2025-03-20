@@ -32,8 +32,8 @@ void setup() {
   Serial.begin(115200);
   pixels.begin();
   
-  InitWiFi();
-  initThingsBoard();
+  xTaskCreate(wifiTask, "init wifi", 6 * 1024, nullptr, 2, nullptr);
+  xTaskCreate(initTBtask, "init CoreIoT", 6 * 1024, nullptr, 2, nullptr);
 
   xTaskCreate(setupDHT, "DHT initial setup", 4096, NULL, 1, NULL);
   xTaskCreate(blinkLED, "blink LED", 3 * 1024, NULL, 1, NULL);
@@ -42,8 +42,6 @@ void setup() {
 
 void loop() {
   WiFireconnect();
-  dispHumid();
-  dispTemp();
   sendTBData();
   delay(4000);
 }

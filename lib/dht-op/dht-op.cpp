@@ -7,6 +7,7 @@ float temp = 0.0;
 void setupDHT(void *pvParameters){
     // Initialize DHT11
     dht.begin();
+    Serial.println("DHT connected!");
     vTaskDelete(NULL);
 }
 
