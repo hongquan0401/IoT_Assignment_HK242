@@ -26,7 +26,6 @@ void blinkLED(void *pvParameters) {
     }
     vTaskDelay(1500);
   }
-  //vTaskDelete(NULL);  // Delete the task when done
 }
 
 void setup() {

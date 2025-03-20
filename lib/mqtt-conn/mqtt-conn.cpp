@@ -62,10 +62,6 @@ bool WiFireconnect(){
     return true;
 }
 
-StaticJsonDocument<256> doc;
-char buffer[256];
-size_t len;
-
 void initThingsBoard(){
     if (!tb.connected()) {
         Serial.printf("Connecting to: (%s) with token (%s)\n", THINGSBOARD_SERVER, TOKEN);

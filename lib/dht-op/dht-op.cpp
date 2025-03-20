@@ -23,13 +23,13 @@ void updateDHT(void *pvParameters){
   
 void dispHumid() {
     Serial.print("Humidity: ");
-    Serial.print(humid, 2);
+    Serial.print(humid, 1);
     Serial.println(" %");
 }
   
 void dispTemp() {
     Serial.print("Temperature: ");
-    Serial.print(temp, 2);
+    Serial.print(temp, 1);
     Serial.println(" °C");
 }
 
