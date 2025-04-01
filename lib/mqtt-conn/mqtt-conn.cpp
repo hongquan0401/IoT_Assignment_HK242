@@ -25,6 +25,23 @@ WiFiClient espClient;
 Arduino_MQTT_Client mqttClient(espClient);
 ThingsBoard tb(mqttClient, MAX_MESSAGE_RECEIVE_SIZE, MAX_MESSAGE_SEND_SIZE);
 
+bool wifiStarted = false;
+void InitWiFi() {
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    Serial.print("Connecting to WiFi.");
+    while (WiFi.status() != WL_CONNECTED) {
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      Serial.print(".");
+    }
+    wifiStarted = true;
+    Serial.println(" ");
+    Serial.print("WiFi connected @ IP address: ");
+    // Print ESP32 Local IP Address
+    vTaskDelay(500);
+    Serial.println(WiFi.localIP());
+    vTaskDelete(NULL);  // Delete the task when done
+}
+
 void wifiTask(void *pvParameters) {
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     Serial.print("Connecting to WiFi.");
@@ -40,24 +57,34 @@ void wifiTask(void *pvParameters) {
     vTaskDelete(NULL);  // Delete the task when done
 }
 
-void InitWiFi() {
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    Serial.print("Connecting to WiFi.");
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-    }
-    Serial.println(" ");
-    Serial.print("WiFi connected @ IP address: ");
-    // Print ESP32 Local IP Address
-    delay(500);
-    Serial.println(WiFi.localIP());
-}
-
-void WiFireconnect(void *pvParameters){
+void WiFiReconnect(void *pvParameters){
     while (1){
-        if (!WiFi.status() == WL_CONNECTED) {
-            xTaskCreate(wifiTask, "Reconnect wifi", 6 * 1024, nullptr, 2, nullptr);
+        if (WiFi.status() != WL_CONNECTED && wifiStarted) {
+            Serial.println("WiFi DISCONNECTED! Trying to reconnect.");
+
+            WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+            Serial.print("Connecting to WiFi.");
+            while (WiFi.status() != WL_CONNECTED) {
+              vTaskDelay(1000 / portTICK_PERIOD_MS);
+              Serial.print(".");
+            }
+            Serial.println(" ");
+            Serial.print("WiFi connected @ IP address: ");
+            // Print ESP32 Local IP Address
+            vTaskDelay(500);
+            Serial.println(WiFi.localIP());
+
+            if(WiFi.status() == WL_CONNECTED){
+                if (!tb.connected()) {
+                    Serial.printf("Connecting to: (%s) with token (%s)\n", THINGSBOARD_SERVER, TOKEN);
+                    if (!tb.connect(THINGSBOARD_SERVER, TOKEN, THINGSBOARD_PORT)) {
+                        Serial.println("Failed to connect");
+                        return;
+                    }else{
+                        Serial.println("CoreIoT server connected!");
+                    }
+                }
+            }
         }
         vTaskDelay(510);
     }

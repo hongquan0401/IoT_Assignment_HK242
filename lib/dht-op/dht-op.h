@@ -5,7 +5,7 @@
 #include "DHT.h"
 
 // DHT sensor configuration
-#define DHTPIN 5       // Digital pin connected to the DHT sensor
+#define DHTPIN 21       // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT22   // DHT 22
 
 void setupDHT(void *pvParameters);

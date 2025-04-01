@@ -19,7 +19,7 @@
 void wifiTask(void *pvParameters);
 void initTBtask(void *pvParameters);
 
-void WiFireconnect(void *pvParameters);
+void WiFiReconnect(void *pvParameters);
 
 void sendTBData(void *pvParameters);
 
