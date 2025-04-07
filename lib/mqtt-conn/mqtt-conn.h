@@ -4,6 +4,7 @@
 
 #include <Arduino_MQTT_Client.h>
 #include <ThingsBoard.h>
+#include <PubSubClient.h>
 #include "dht-op.h"
 
 #ifdef ESP8266
