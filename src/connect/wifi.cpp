@@ -1,150 +1,26 @@
+
 #include "wifi.h"
 
-WiFiClient espClient;
-PubSubClient client(espClient);
+void taskWifi(void *pvParameters)
+{
 
-// MQTT function
-void reconnectMQTT()
-{
-    while (!client.connected())
-    {
-        Serial.print("Connecting to MQTT...\n");
-        String clientID = "f74f6c80-07c3-11f0-a887-6d1a184f2bb5";
-        if (client.connect(clientID.c_str(), TOKEN_GATEWAY, ""))
-        {
-            Serial.println("MQTT connect success.");
-            if (client.subscribe(MQTT_SUBCRIBE_TOPIC)) Serial.println("Subcribe success.");
-            else Serial.println("Fail.");
-        }
-        else{
-            Serial.print("MQTT connection failed, rc=");
-            Serial.print(String(client.state()));
-        }
-        vTaskDelay(pdMS_TO_TICKS(5000));
-    }   
-}
-
-void callback(char* topic, byte* payload, unsigned int length)
-{
-    Serial.printf("[MQTT Message Arrive]: %s\n", topic);
-    // v1/devices/me/rpc/request/15
-    String str_topic(topic);
-    // get last idx
-    int idx = str_topic.lastIndexOf('/');
-    String requestID = str_topic.substring(idx + 1);
-    String msg;
-    for (unsigned int i = 0; i < length; i++)
-    {
-        msg += (char)payload[i];
-    }
-    Serial.print("[MQTT] Payload: ");
-    Serial.println(msg);
-    StaticJsonDocument<100> docRequest;
-    DeserializationError error = deserializeJson(docRequest, msg);
-    if (error)
-    {
-        Serial.print("[ERROR] deserializeJson() failed: ");
-        Serial.println(error.f_str());
-        return;
-    }
-    String method = docRequest["method"].as<String>();
-    if (method != "SCH_LED")
-    {
-        bool state = docRequest["params"];
-        if (method == "setState")
-        {
-            if (state) digitalWrite(A0, HIGH);
-            else digitalWrite(A0, LOW);
-        }
-        else if (method == "LEDState")
-        {
-            // doc for RPC response
-            bool data = digitalRead(A0)? true : false;
-            String mqtt_topic = String("v1/devices/me/rpc/response/" + requestID);
-            String val;
-            data ? val = "true" : val = "false";
-            publishData(mqtt_topic, val);
-            return;
-        }
-    }
-    if (method == "SCH_LED")
-    {
-        JsonObject params = docRequest["params"].as<JsonObject>();
-        bool state = params["state"].as<bool>();
-        state ? digitalWrite(A0, HIGH) : digitalWrite(A0, LOW);
-        Serial.println("Do SCH request success. (Thay cho Response RPC)");
-        return;
-    }
-}
-
-void taskMQTT(void* pvParams)
-{   
-    // Check wifi connection
-    while (WiFi.status() != WL_CONNECTED )
-    {
-        vTaskDelay(pdMS_TO_TICKS(delay_connect));
-    }
-    client.setServer(MQTT_SERVER, MQTT_PORT);
-    client.setKeepAlive(30);
-    client.setCallback(callback);
-    Serial.println("check point");
-    
-    Serial.println("MQTT connetion success");
-    while (true)
-    {
-        if (!client.connected())
-        {
-            reconnectMQTT();
-        }
-        client.loop();
-        vTaskDelay(delay_mqtt / portTICK_PERIOD_MS);
-    }
-}
-bool publishData(const String &feedName, String message)
-{
-    String topic = feedName;
-    // Serial.print("Publishing to topic: ");
-    // Serial.print(feedName);
-    // Serial.print("Status: ");
-
-    if(client.publish(topic.c_str(), message.c_str(), 1))
-    {
-        Serial.println(topic);
-        Serial.print("Publish success: ");
-        Serial.println(message);
-        return true;
-    }
-    else
-    {
-        Serial.println("Publish fail!");
-        return false;
-    }
-}
-bool subcriptData()
-{
-    if (client.subscribe(MQTT_TELEMETRY))
-    {
-        Serial.println("Subcripted success.");
-        Serial.println();
-        return true;
-    }
-    else Serial.println("Subcripted Failed.");
-    return false;
-}
-// Connect Wifi function
-void taskWifi(void* pvParams)
-{
     WiFi.mode(WIFI_STA);
+
+    Serial.print("Connecting to SSID: ");
+    Serial.println(WIFI_SSID);
+
     WiFi.begin(WIFI_SSID, WIFI_PASS);
-    uint8_t wifiRetry = 0;
-    while (WiFi.status() != WL_CONNECTED && wifiRetry < 20)
+
+    int wifiRetryCount = 0;
+    while (WiFi.status() != WL_CONNECTED && wifiRetryCount < 20)
     {
         vTaskDelay(pdMS_TO_TICKS(1000));
-        wifiRetry++;
+        wifiRetryCount++;
     }
 
     if (WiFi.status() != WL_CONNECTED)
     {
+        Serial.println("[ERROR] WiFi connection failed! Restarting in 5s...");
         vTaskDelay(pdMS_TO_TICKS(5000));
         ESP.restart();
     }
@@ -158,26 +34,32 @@ void taskWifi(void* pvParams)
     {
         if (WiFi.status() != WL_CONNECTED)
         {
-        Serial.print("[WARN] Lost WiFi! Attempting to reconnect...");
-        uint8_t retryCount = 0;
+            Serial.println("[WARN] Lost WiFi! Attempting to reconnect...");
+            int retryCount = 0;
 
-        while (WiFi.status() != WL_CONNECTED && retryCount < 20)
-        {
-            vTaskDelay(pdMS_TO_TICKS(1000));
-            retryCount++;
+            while (WiFi.status() != WL_CONNECTED && retryCount < 20)
+            {
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                retryCount++;
+            }
+
+            if (WiFi.status() == WL_CONNECTED)
+            {
+                Serial.println("[INFO] WiFi Reconnected!");
+            }
+            else
+            {
+                Serial.println("[ERROR] WiFi reconnect failed. Restarting in 5s...");
+                vTaskDelay(pdMS_TO_TICKS(5000));
+                ESP.restart();
+            }
         }
 
-        if (WiFi.status() == WL_CONNECTED)
-        {
-            Serial.print("[INFO] WiFi Reconnected!");
-        }
-        else
-        {
-            Serial.print("[ERROR] WiFi reconnect failed. Restarting in 5s...");
-            vTaskDelay(pdMS_TO_TICKS(delay_connect_wifi));
-            ESP.restart();
-        }
-        }
-        vTaskDelay(pdMS_TO_TICKS(delay_connect_wifi));
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
+}
+
+void wifi_init()
+{
+    xTaskCreate(taskWifi, "TaskWifi", 4096, NULL, 2, NULL);
 }
