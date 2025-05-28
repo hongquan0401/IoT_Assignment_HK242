@@ -16,7 +16,7 @@
 #include "../src/common/define.h"
 
 // include connect
-#include "../src/connect/wifi.h"
+#include "../src/connect/connect_init.h"
 
 // include device
 // #include "../src/device/device_init.h"
