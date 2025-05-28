@@ -2,7 +2,10 @@
 
 void setup() {
   // put your setup code here, to run once:
-   Serial.begin(UART_DEFAUT_BAUDRATE, SERIAL_8N1, UART_RXD_DEBUG_PIN, UART_TXD_DEBUG_PIN);
+   Serial.begin(UART_DEFAUT_BAUDRATE, SERIAL_8N1);
+   Serial.println("Log:");
+   delay(2000);
+   connect_init();
 }
 
 void loop() {
