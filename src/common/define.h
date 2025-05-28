@@ -12,15 +12,6 @@
 #define UART_TXD_DEBUG_PIN 17
 #define UART_DEFAUT_BAUDRATE 9600
 
-// DEFINE MQTT
-#define MQTT_MAX_PACKAGE_SIZE 1024
-#define MQTT_MAX_BUFFER_SIZE 128
-
-#define MQTT_SERVER "app.coreiot.io"
-#define MQTT_PORT 1883
-#define MQTT_USERS "pole_1"
-#define MQTT_PASSWORD "16012003"
-
 #define MQTT_FEED_NOTHING ""
 // #define MQTT_FEED_POLE_02 "BK_SmartPole/feeds/V20"
 #define MQTT_GATEWAY_TELEMETRY_TOPIC "v1/gateway/telemetry"
@@ -43,13 +34,16 @@
 
 // MQTT
 #define MQTT_PORT 1883
-#define MQTT_SERVER "app.coreiot.io"
+// #define MQTT_SERVER "app.coreiot.io"
+#define MQTT_SERVER "demo.thingsboard.io"
 #define delay_mqtt 100
 #define MQTT_TELEMETRY "v1/devices/me/telemetry"
 #define MQTT_ATTRIBUTES "v1/devices/me/rpc/response"
 #define MQTT_SUBCRIBE_TOPIC "v1/devices/me/rpc/request/+"
 #define MAX_MSG_SIZE 1024U
+#define CLIENT_ID "xxxx"
 
 // TOKEN GATEWAY
-#define TOKEN_GATEWAY "I4pP9auSdf6KzYU0PmWV"
+#define TOKEN "PmSBDmKS9x2p3Xy9zMbP"
+
 #endif
