@@ -1,4 +1,5 @@
 #ifndef _DEFINE_H_
+#define _DEFINE_H_
 // SPI PORT
 #define MISO 19
 #define MOSI 23
