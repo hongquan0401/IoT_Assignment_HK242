@@ -1,18 +1,10 @@
-#include <Arduino.h>
-
-// put function declarations here:
-int myFunction(int, int);
+#include "globals.h"
 
 void setup() {
   // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+   Serial.begin(UART_DEFAUT_BAUDRATE, SERIAL_8N1, UART_RXD_DEBUG_PIN, UART_TXD_DEBUG_PIN);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
 }
