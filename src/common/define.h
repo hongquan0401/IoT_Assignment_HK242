@@ -46,4 +46,7 @@
 // TOKEN GATEWAY
 #define TOKEN "PmSBDmKS9x2p3Xy9zMbP"
 
+// APP SCRIPT
+#define APP_SCRIPT_URL "/macros/s/AKfycbwFaIbANEpqM4q88uKiFOMPTBhdV5r3WO2HMRh1-np2MuYOyS7UmEKqTO2ul6eUTOBvZg/exec"
+#define HOST_URL "script.google.com"
 #endif

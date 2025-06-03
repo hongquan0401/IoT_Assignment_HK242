@@ -11,6 +11,9 @@
 #include <vector>
 #include <esp32-hal-ledc.h>
 #include <DHT20.h>
+#include "WiFiClientSecure.h"
+#include <MFRC522.h>
+#include <SPI.h>
 
 // include common files
 #include "../src/common/define.h"
@@ -18,6 +21,9 @@
 // include connect
 #include "../src/connect/connect_init.h"
 
+// include rfid
+#include "../src/rfid/rfid_module.h"
+#include "../src/rfid/google_sheet.h"
 // include device
 // #include "../src/device/device_init.h"
 

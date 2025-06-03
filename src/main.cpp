@@ -1,13 +1,24 @@
 #include "globals.h"
+WiFiClientSecure client;
 
-void setup() {
+void setup()
+{
   // put your setup code here, to run once:
-   Serial.begin(UART_DEFAUT_BAUDRATE, SERIAL_8N1);
-   Serial.println("Log:");
-   delay(2000);
-   connect_init();
+  Serial.begin(UART_DEFAUT_BAUDRATE, SERIAL_8N1);
+  initRFID();
+  Serial.println("Log:");
+  delay(2000);
+  connect_init();
+  Serial.println("Ready to scan RFID cards...");
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void loop()
+{
+  String uid = readUID();
+  if (uid != "")
+  {
+    Serial.println("Scanned UID: " + uid);
+    checkUIDWithGoogleSheet(uid);
+    delay(2000);
+  }
 }
