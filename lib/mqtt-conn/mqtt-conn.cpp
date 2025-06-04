@@ -1,8 +1,8 @@
 #include "mqtt-conn.h"
 
 //WiFi configuration
-constexpr char WIFI_SSID[] = "DAMA-LAPTOP";
-constexpr char WIFI_PASSWORD[] = "111111119";
+char WIFI_SSID[] = "DAMA-LAPTOP";
+char WIFI_PASSWORD[] = "111111119";
 //CoreIOT MQTT configuration
 constexpr char TOKEN[] = "unhqjrXzucOqfQR07vY5";
 constexpr char THINGSBOARD_SERVER[] = "app.coreiot.io";
@@ -118,12 +118,20 @@ void sendTBData(void *pvParameters){
             }else{
                 Serial.println("Temperature FAILED to send.");
             }
+
             // Send temperature to the CoreIoT server
             if(tb.sendTelemetryData<int>("humidity", getHumid())){
                 Serial.println("Humidity sent to CoreIoT successfullly!");
                 dispHumid();
             }else{
                 Serial.println("Humidity FAILED to send.");
+            }
+
+            if(tb.sendTelemetryData<int>("pm2.5", getPM2p5())){
+                Serial.println("PM 2.5 Dust density sent to CoreIoT successfullly!");
+                dispPM2p5();
+            }else{
+                Serial.println("PM 2.5 Dust density FAILED to send.");
             }
         }
         Serial.println("-----------------------------------------");

@@ -6,6 +6,7 @@
 #include <ThingsBoard.h>
 #include <PubSubClient.h>
 #include "dht-op.h"
+#include "dust-op.h"
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
