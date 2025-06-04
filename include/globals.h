@@ -14,6 +14,7 @@
 #include "WiFiClientSecure.h"
 #include <MFRC522.h>
 #include <SPI.h>
+#include <HTTPClient.h>
 
 // include common files
 #include "../src/common/define.h"
@@ -22,8 +23,8 @@
 #include "../src/connect/connect_init.h"
 
 // include rfid
-#include "../src/rfid/rfid_module.h"
-#include "../src/rfid/google_sheet.h"
+// #include "../src/rfid/rfid_module.h"
+// #include "../src/rfid/google_sheet.h"
 // include device
 // #include "../src/device/device_init.h"
 

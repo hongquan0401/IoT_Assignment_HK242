@@ -3,9 +3,7 @@
 
 #include <globals.h>
 
-void initRFID();
-String readUID();
-bool isUIDStored(const String &uid);
-void storeUID(const String &uid);
+// void initRFID();
+// String readUIDs();
 
 #endif

@@ -5,7 +5,9 @@
 #define MOSI 23
 #define SCK 18
 #define SDA 5
-#define RST 22
+#define RST 17
+#define MAX_UIDS 20
+#define UID_LENGTH 8
 
 // UART COMMON
 #define UART_RXD_DEBUG_PIN 16
@@ -19,8 +21,8 @@
 #define MQTT_REQUEST_TOPIC "v1/devices/me/rpc/request/+"
 
 // DEFINE WIFI AP
-#define WIFI_SSID "Fatcat"
-#define WIFI_PASS "lnss2136"
+#define WIFI_SSID "22-08"
+#define WIFI_PASS "414414a2"
 
 // DEFINE DELAY TIME
 #define delay_connect_wifi 5000
@@ -49,4 +51,5 @@
 // APP SCRIPT
 #define APP_SCRIPT_URL "/macros/s/AKfycbwFaIbANEpqM4q88uKiFOMPTBhdV5r3WO2HMRh1-np2MuYOyS7UmEKqTO2ul6eUTOBvZg/exec"
 #define HOST_URL "script.google.com"
+
 #endif
