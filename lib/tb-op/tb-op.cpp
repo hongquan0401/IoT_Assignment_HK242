@@ -1,29 +1,24 @@
-#include "mqtt-conn.h"
-
-//WiFi configuration
-char WIFI_SSID[] = "DAMA-LAPTOP";
-char WIFI_PASSWORD[] = "111111119";
-//CoreIOT MQTT configuration
-constexpr char TOKEN[] = "unhqjrXzucOqfQR07vY5";
-constexpr char THINGSBOARD_SERVER[] = "app.coreiot.io";
-
-//THINGSBOARD configuration
-#if ENCRYPTED
-constexpr uint16_t THINGSBOARD_PORT = 8883U;
-#else
-constexpr uint16_t THINGSBOARD_PORT = 1883U;
-#endif
-constexpr uint16_t MAX_MESSAGE_SEND_SIZE = 256U;
-constexpr uint16_t MAX_MESSAGE_RECEIVE_SIZE = 256U;
+#include "tb-op.hpp"
 
 #if ENCRYPTED
 WiFiClientSecure espClient;
 #else
 WiFiClient espClient;
 #endif
+
+//----------------FUNCTIONS----------------
+
+OTA_Firmware_Update<> ota;
+const std::array<IAPI_Implementation*, 1U> apis = {
+    &ota
+};
     
 Arduino_MQTT_Client mqttClient(espClient);
-ThingsBoard tb(mqttClient, MAX_MESSAGE_RECEIVE_SIZE, MAX_MESSAGE_SEND_SIZE);
+ThingsBoard tb(mqttClient, MAX_MESSAGE_RECEIVE_SIZE, MAX_MESSAGE_SEND_SIZE, Default_Max_Stack_Size, apis);
+
+Espressif_Updater<> updater;
+bool currentFWSent = false;
+bool updateRequestSent = false;
 
 bool wifiStarted = false;
 void InitWiFi() {
@@ -39,6 +34,7 @@ void InitWiFi() {
     // Print ESP32 Local IP Address
     vTaskDelay(500);
     Serial.println(WiFi.localIP());
+    
     vTaskDelete(NULL);  // Delete the task when done
 }
 
@@ -54,6 +50,7 @@ void wifiTask(void *pvParameters) {
     // Print ESP32 Local IP Address
     vTaskDelay(500);
     Serial.println(WiFi.localIP());
+
     vTaskDelete(NULL);  // Delete the task when done
 }
 
@@ -137,4 +134,40 @@ void sendTBData(void *pvParameters){
         Serial.println("-----------------------------------------");
         vTaskDelay(5220);
     }
+}
+
+void update_starting_callback() {
+  // Nothing to do
+}
+void finished_callback(const bool & success) {
+  if (success) {
+    Serial.println("Done, Reboot now");
+    esp_restart();
+    return;
+  }
+  Serial.println("Downloading firmware failed");
+}
+
+void progress_callback(const size_t & current, const size_t & total) {
+  Serial.printf("Progress %.2f%%\n", static_cast<float>(current * 100U) / total);
+}
+
+void OTAupdate (void *pvParameters) {
+  while (1) {
+    if (!currentFWSent) {
+      currentFWSent = ota.Firmware_Send_Info(CURRENT_FIRMWARE_TITLE, CURRENT_FIRMWARE_VERSION);
+    }
+  
+    if (!updateRequestSent) {
+      Serial.println("Firwmare Update...");
+      const OTA_Update_Callback callback(CURRENT_FIRMWARE_TITLE, CURRENT_FIRMWARE_VERSION, &updater,
+                                        &finished_callback, &progress_callback, &update_starting_callback,
+                                        FIRMWARE_FAILURE_RETRIES, FIRMWARE_PACKET_SIZE);
+      updateRequestSent = ota.Start_Firmware_Update(callback);
+    }
+  
+    tb.loop();
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+
 }

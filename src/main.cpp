@@ -3,7 +3,7 @@
 #include "freertos/task.h"
 
 #include "dht-op.h"
-#include "mqtt-conn.h"
+#include "tb-op.hpp"
 #include "led-op.h"
 #include "dust-op.h"
 
@@ -20,6 +20,7 @@ void setup() {
   xTaskCreate(updateDHT, "Update DHT readings", 6 * 1024, NULL, 3, NULL);
   xTaskCreate(updateDustSensor, "Update dust readings", 6 * 1024, NULL, 3, NULL);
   xTaskCreate(sendTBData, "Send data to CoreIoT", 8 * 1024, NULL, 2, NULL);
+  xTaskCreate(OTAupdate, "OTA update", 2048 * 20, NULL, 2, NULL);
   vTaskStartScheduler;
 }
 
