@@ -6,7 +6,7 @@ WiFiClientSecure espClient;
 WiFiClient espClient;
 #endif
 
-//----------------FUNCTIONS----------------
+
 
 OTA_Firmware_Update<> ota;
 const std::array<IAPI_Implementation*, 1U> apis = {
@@ -20,6 +20,17 @@ Espressif_Updater<> updater;
 bool currentFWSent = false;
 bool updateRequestSent = false;
 
+//----------------TASKS HANDLER----------------
+TaskHandle_t updateDHT_handle;
+TaskHandle_t updateDust_handle;
+TaskHandle_t sendData_handle;
+void startTasks(){
+    xTaskCreate(updateDHT, "Update DHT readings", 6 * 1024, NULL, 4, &updateDHT_handle);
+    xTaskCreate(updateDustSensor, "Update dust readings", 6 * 1024, NULL, 4, &updateDust_handle);
+    xTaskCreate(sendTBData, "Send data to CoreIoT", 8 * 1024, NULL, 5, &sendData_handle);
+}
+
+//----------------WIFI FUNCTIONS----------------
 bool wifiStarted = false;
 void InitWiFi() {
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -105,6 +116,7 @@ void initTBtask(void *pvParameters){
     }
 }
 
+//----------------SEND DATA TO THINGSBOARD FUNCTION----------------
 void sendTBData(void *pvParameters){
     while (1){
         if(!(isnan(getTemp())) && !(isnan(getHumid()))){
@@ -136,12 +148,18 @@ void sendTBData(void *pvParameters){
     }
 }
 
+//----------------OTA FUNCTIONS----------------
 void update_starting_callback() {
-  // Nothing to do
+    vTaskSuspend(updateDHT_handle);
+    vTaskSuspend(updateDust_handle);
+    vTaskSuspend(sendData_handle);
 }
 void finished_callback(const bool & success) {
   if (success) {
     Serial.println("Done, Reboot now");
+    vTaskResume(updateDHT_handle);
+    vTaskResume(updateDust_handle);
+    vTaskResume(sendData_handle);
     esp_restart();
     return;
   }
@@ -153,21 +171,20 @@ void progress_callback(const size_t & current, const size_t & total) {
 }
 
 void OTAupdate (void *pvParameters) {
-  while (1) {
-    if (!currentFWSent) {
-      currentFWSent = ota.Firmware_Send_Info(CURRENT_FIRMWARE_TITLE, CURRENT_FIRMWARE_VERSION);
+    while(1){
+        if (!currentFWSent) {
+            currentFWSent = ota.Firmware_Send_Info(CURRENT_FIRMWARE_TITLE, CURRENT_FIRMWARE_VERSION);
+        }
+    
+        if (!updateRequestSent) {
+            Serial.println("Firwmare Update...");
+            const OTA_Update_Callback callback(CURRENT_FIRMWARE_TITLE, CURRENT_FIRMWARE_VERSION, &updater,
+                                            &finished_callback, &progress_callback, &update_starting_callback,
+                                            FIRMWARE_FAILURE_RETRIES, FIRMWARE_PACKET_SIZE);
+            updateRequestSent = ota.Start_Firmware_Update(callback);
+        }
+        
+        tb.loop();
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
-  
-    if (!updateRequestSent) {
-      Serial.println("Firwmare Update...");
-      const OTA_Update_Callback callback(CURRENT_FIRMWARE_TITLE, CURRENT_FIRMWARE_VERSION, &updater,
-                                        &finished_callback, &progress_callback, &update_starting_callback,
-                                        FIRMWARE_FAILURE_RETRIES, FIRMWARE_PACKET_SIZE);
-      updateRequestSent = ota.Start_Firmware_Update(callback);
-    }
-  
-    tb.loop();
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
-
 }

@@ -46,10 +46,13 @@ constexpr uint16_t MAX_MESSAGE_RECEIVE_SIZE = FIRMWARE_PACKET_SIZE + 50U;
 // OTA update parameter
 constexpr char CURRENT_FIRMWARE_TITLE[] = "ESP32_OTA";
 constexpr char CURRENT_FIRMWARE_VERSION[] = "1.0";
-// Maximum amount of retries we attempt to download each firmware chunck over MQTT
+// Maximum amount of retries we attempt to download each firmware chunk over MQTT
 constexpr uint8_t FIRMWARE_FAILURE_RETRIES = 12U;
 constexpr uint64_t REQUEST_TIMEOUT_MICROSECONDS = 10000U * 1000U;
 
+constexpr std::array<const char*, 7U> SUBSCRIBED_SHARED_ATTRIBUTES = {
+  "fw_state"
+};
 
 void wifiTask(void *pvParameters);
 void initTBtask(void *pvParameters);
@@ -59,5 +62,7 @@ void WiFiReconnect(void *pvParameters);
 void sendTBData(void *pvParameters);
 
 void OTAupdate (void *pvParameters);
+
+void startTasks();
 
 #endif /*MQTT_CONN_H*/
