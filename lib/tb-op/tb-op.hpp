@@ -50,10 +50,6 @@ constexpr char CURRENT_FIRMWARE_VERSION[] = "1.0";
 constexpr uint8_t FIRMWARE_FAILURE_RETRIES = 12U;
 constexpr uint64_t REQUEST_TIMEOUT_MICROSECONDS = 10000U * 1000U;
 
-constexpr std::array<const char*, 7U> SUBSCRIBED_SHARED_ATTRIBUTES = {
-  "fw_state"
-};
-
 void wifiTask(void *pvParameters);
 void initTBtask(void *pvParameters);
 
